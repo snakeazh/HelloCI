@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排列五号码分布分析</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 排列五 · 预测任意3个号码</h1>
+            <p class="subtitle">选出3个数字，验证它们出现在开奖5位中的命中率</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧面板 -->
+            <div class="panel left-panel">
+                <div class="section">
+                    <h2>📊 数据概况</h2>
+                    <div class="form-group">
+                        <label>历史数据</label>
+                        <span id="data-count" class="badge">加载中...</span>
+                    </div>
+                    <div class="info-box">
+                        <span>排列五：5位数字(万千百十个)，每位0-9</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>🔍 分析规则</h2>
+                    <div class="form-group">
+                        <label>选择规则</label>
+                        <select id="rule-select">
+                            <option value="">-- 请选择 --</option>
+                        </select>
+                    </div>
+                    <div id="rule-description" class="rule-desc"></div>
+                    <div id="rule-params" class="params-container"></div>
+                </div>
+
+                <div class="section">
+                    <h2>⚙️ 回测设置</h2>
+                    <div class="form-group">
+                        <label>回测期数</label>
+                        <input type="number" id="test-periods" value="50" min="10" max="300">
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-analyze" class="btn btn-primary">执行分析</button>
+                        <button id="btn-backtest" class="btn btn-success">回测验证</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧结果面板 -->
+            <div class="panel right-panel">
+                <div class="tabs">
+                    <button class="tab active" data-tab="distribution">号码分布</button>
+                    <button class="tab" data-tab="analysis">分析结果</button>
+                    <button class="tab" data-tab="backtest">回测报告</button>
+                </div>
+
+                <div id="tab-distribution" class="tab-content active">
+                    <div class="chart-header">
+                        <h3>各位号码出现频率</h3>
+                        <div class="chart-controls">
+                            <button class="btn btn-sm pos-btn active" data-pos="-1">全部</button>
+                            <button class="btn btn-sm pos-btn" data-pos="0">万位</button>
+                            <button class="btn btn-sm pos-btn" data-pos="1">千位</button>
+                            <button class="btn btn-sm pos-btn" data-pos="2">百位</button>
+                            <button class="btn btn-sm pos-btn" data-pos="3">十位</button>
+                            <button class="btn btn-sm pos-btn" data-pos="4">个位</button>
+                        </div>
+                    </div>
+                    <canvas id="distribution-chart"></canvas>
+                </div>
+
+                <div id="tab-analysis" class="tab-content">
+                    <h3>分析结果</h3>
+                    <div id="analysis-result" class="result-container">
+                        <p class="placeholder">请选择规则并点击"执行分析"</p>
+                    </div>
+                </div>
+
+                <div id="tab-backtest" class="tab-content">
+                    <h3>回测验证报告</h3>
+                    <div id="backtest-result" class="result-container">
+                        <p class="placeholder">请选择规则并点击"回测验证"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
