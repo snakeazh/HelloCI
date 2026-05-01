@@ -96,6 +96,15 @@ select:focus, input:focus {
     font-size: 0.8rem;
 }
 
+.info-box {
+    padding: 10px 14px;
+    background: rgba(100, 255, 218, 0.05);
+    border: 1px solid rgba(100, 255, 218, 0.15);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #8892b0;
+}
+
 .rule-desc {
     font-size: 0.85rem;
     color: #8892b0;
@@ -157,10 +166,13 @@ select:focus, input:focus {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 6px;
     cursor: pointer;
+    flex: none;
 }
 
-.btn-sm:hover {
-    background: rgba(255, 255, 255, 0.2);
+.btn-sm:hover, .btn-sm.active {
+    background: rgba(100, 255, 218, 0.2);
+    border-color: #64ffda;
+    color: #64ffda;
 }
 
 .tabs {
@@ -168,7 +180,6 @@ select:focus, input:focus {
     gap: 4px;
     margin-bottom: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 0;
 }
 
 .tab {
@@ -204,6 +215,8 @@ select:focus, input:focus {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .chart-header h3 {
@@ -213,7 +226,8 @@ select:focus, input:focus {
 
 .chart-controls {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 #distribution-chart {
@@ -244,43 +258,60 @@ select:focus, input:focus {
     font-size: 1rem;
 }
 
-.numbers-display {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin: 12px 0;
+.position-prediction {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin: 16px 0;
 }
 
-.number-ball {
-    width: 36px;
-    height: 36px;
+.position-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.position-card .pos-name {
+    font-size: 0.75rem;
+    color: #8892b0;
+    margin-bottom: 8px;
+}
+
+.position-card .numbers {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.digit-ball {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.85rem;
-}
-
-.number-ball.red {
+    font-size: 0.8rem;
     background: linear-gradient(135deg, #e53935, #ff5252);
     color: white;
 }
 
-.number-ball.blue {
-    background: linear-gradient(135deg, #1565c0, #42a5f5);
-    color: white;
-}
-
-.number-ball.hit {
+.digit-ball.hit {
     background: linear-gradient(135deg, #ffd700, #ffab00);
     color: #1a1a2e;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
+.digit-ball.actual {
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
+    color: white;
+}
+
 .stat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 12px;
     margin: 16px 0;
 }
@@ -293,7 +324,7 @@ select:focus, input:focus {
 }
 
 .stat-item .value {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #64ffda;
 }
@@ -312,7 +343,7 @@ select:focus, input:focus {
 }
 
 .backtest-table th, .backtest-table td {
-    padding: 8px 12px;
+    padding: 8px 10px;
     text-align: left;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -345,14 +376,60 @@ select:focus, input:focus {
     color: #ff5252;
 }
 
+.position-accuracy-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0;
+}
+
+.position-accuracy-bar .pos-label {
+    width: 40px;
+    font-size: 0.8rem;
+    color: #8892b0;
+}
+
+.position-accuracy-bar .bar-bg {
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.position-accuracy-bar .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.position-accuracy-bar .pct {
+    width: 45px;
+    font-size: 0.8rem;
+    color: #64ffda;
+    text-align: right;
+}
+
 .loading {
     text-align: center;
     padding: 20px;
     color: #8892b0;
 }
 
+.trend-indicator {
+    font-size: 1.2rem;
+}
+
+.trend-up { color: #38ef7d; }
+.trend-down { color: #ff5252; }
+.trend-flat { color: #ffd200; }
+
 @media (max-width: 900px) {
     .main-content {
         grid-template-columns: 1fr;
+    }
+    .position-prediction {
+        grid-template-columns: repeat(3, 1fr);
     }
 }

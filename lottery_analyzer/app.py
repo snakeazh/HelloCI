@@ -1,5 +1,4 @@
-"""彩票号码分布分析工具 - 主应用"""
-import json
+"""排列五号码分布分析工具 - 主应用"""
 from flask import Flask, render_template, request, jsonify
 from analyzer import LotteryAnalyzer
 
@@ -12,34 +11,26 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/lottery_types", methods=["GET"])
-def get_lottery_types():
-    """获取支持的彩票类型"""
-    return jsonify(analyzer.get_lottery_types())
-
-
-@app.route("/api/history/<lottery_type>", methods=["GET"])
-def get_history(lottery_type):
+@app.route("/api/history", methods=["GET"])
+def get_history():
     """获取历史数据"""
-    data = analyzer.get_history(lottery_type)
-    return jsonify(data)
+    return jsonify(analyzer.get_history())
 
 
 @app.route("/api/upload_history", methods=["POST"])
 def upload_history():
     """上传历史数据"""
     data = request.json
-    lottery_type = data.get("lottery_type")
     records = data.get("records", [])
-    result = analyzer.add_history(lottery_type, records)
+    result = analyzer.add_history(records)
     return jsonify(result)
 
 
-@app.route("/api/distribution/<lottery_type>", methods=["GET"])
-def get_distribution(lottery_type):
-    """获取号码分布统计"""
-    zone = request.args.get("zone", "red")
-    data = analyzer.get_distribution(lottery_type, zone)
+@app.route("/api/distribution", methods=["GET"])
+def get_distribution():
+    """获取号码分布统计，支持按位查询"""
+    position = request.args.get("position", "-1", type=int)
+    data = analyzer.get_distribution(position)
     return jsonify(data)
 
 
@@ -47,10 +38,9 @@ def get_distribution(lottery_type):
 def analyze():
     """执行自定义分析规则"""
     data = request.json
-    lottery_type = data.get("lottery_type")
     rule = data.get("rule")
     params = data.get("params", {})
-    result = analyzer.run_analysis(lottery_type, rule, params)
+    result = analyzer.run_analysis(rule, params)
     return jsonify(result)
 
 
@@ -58,11 +48,10 @@ def analyze():
 def backtest():
     """回测验证分析思路的正确率"""
     data = request.json
-    lottery_type = data.get("lottery_type")
     rule = data.get("rule")
     params = data.get("params", {})
     test_periods = data.get("test_periods", 50)
-    result = analyzer.backtest(lottery_type, rule, params, test_periods)
+    result = analyzer.backtest(rule, params, test_periods)
     return jsonify(result)
 
 
