@@ -285,6 +285,13 @@ select:focus, input:focus {
     flex-wrap: wrap;
 }
 
+.pick3-display {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
 .digit-ball {
     width: 28px;
     height: 28px;
@@ -298,6 +305,15 @@ select:focus, input:focus {
     color: white;
 }
 
+.digit-ball.big {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    color: #1a1a2e;
+    box-shadow: 0 4px 20px rgba(255, 210, 0, 0.4);
+}
+
 .digit-ball.hit {
     background: linear-gradient(135deg, #ffd700, #ffab00);
     color: #1a1a2e;
@@ -307,6 +323,57 @@ select:focus, input:focus {
 .digit-ball.actual {
     background: linear-gradient(135deg, #1565c0, #42a5f5);
     color: white;
+}
+
+.freq-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.freq-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.freq-bar-row.selected {
+    background: rgba(100, 255, 218, 0.1);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+}
+
+.freq-num {
+    width: 24px;
+    font-weight: 700;
+    color: #ccd6f6;
+    text-align: center;
+}
+
+.freq-bar-bg {
+    flex: 1;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.freq-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 8px;
+}
+
+.freq-bar-fill.overdue {
+    background: linear-gradient(90deg, #ff5252, #ffd200);
+}
+
+.freq-count {
+    width: 45px;
+    font-size: 0.8rem;
+    color: #8892b0;
+    text-align: right;
 }
 
 .stat-grid {

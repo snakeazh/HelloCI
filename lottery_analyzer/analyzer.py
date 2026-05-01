@@ -1,4 +1,4 @@
-"""排列五号码分布分析引擎"""
+"""排列五号码分布分析引擎 - 预测任意3个号码"""
 import json
 import os
 from collections import Counter
@@ -75,86 +75,85 @@ class LotteryAnalyzer:
             }
 
     def get_available_rules(self) -> list[dict]:
-        """返回所有可用分析规则"""
+        """返回所有可用分析规则（预测任意3个号码模式）"""
         return [
             {
-                "id": "position_hot_cold",
-                "name": "按位冷热号",
-                "description": "分析每个位置近N期的号码出现频率，选出各位最热/最冷的号码作为预测",
+                "id": "pick3_frequency",
+                "name": "频率选号",
+                "description": "统计近N期所有位置出现的数字频率，选出现最多的3个号码",
                 "params": [
                     {"name": "window", "type": "int", "default": 20, "description": "观察窗口期数"},
-                    {"name": "strategy", "type": "select", "options": ["hot", "cold", "mixed"], "default": "hot", "description": "策略：热号/冷号/混合"},
+                    {"name": "strategy", "type": "select", "options": ["hot", "cold", "mixed"], "default": "hot", "description": "选热号/冷号/混合"},
                 ],
             },
             {
-                "id": "position_interval",
-                "name": "按位遗漏分析",
-                "description": "分析每个位置上各号码的遗漏期数，选出遗漏超过阈值即将回补的号码",
+                "id": "pick3_overdue",
+                "name": "遗漏回补",
+                "description": "找出长期未出现的号码，认为它们即将回补出现",
                 "params": [
-                    {"name": "threshold_ratio", "type": "float", "default": 1.5, "description": "超过平均遗漏的倍数阈值"},
+                    {"name": "threshold", "type": "int", "default": 5, "description": "遗漏期数阈值"},
                 ],
             },
             {
-                "id": "sum_value",
-                "name": "和值分析",
-                "description": "统计五位数字之和的分布区间，预测下期和值范围并反推可能的号码组合",
+                "id": "pick3_neighbor",
+                "name": "邻号跟随",
+                "description": "基于上期开奖号码的邻号（+1/-1）出现概率高的规律",
                 "params": [
-                    {"name": "window", "type": "int", "default": 30, "description": "观察窗口期数"},
-                    {"name": "bins", "type": "int", "default": 5, "description": "和值区间划分数"},
+                    {"name": "range_size", "type": "int", "default": 1, "description": "邻号范围(±N)"},
                 ],
             },
             {
-                "id": "span",
-                "name": "跨度分析",
-                "description": "分析五位数字中最大值与最小值之差（跨度）的规律",
-                "params": [
-                    {"name": "window", "type": "int", "default": 30, "description": "观察窗口期数"},
-                ],
-            },
-            {
-                "id": "big_small",
-                "name": "大小比分析",
-                "description": "分析每期大号(5-9)和小号(0-4)的比例规律，预测下期大小比",
-                "params": [
-                    {"name": "window", "type": "int", "default": 20, "description": "观察窗口期数"},
-                ],
-            },
-            {
-                "id": "odd_even",
-                "name": "奇偶比分析",
-                "description": "分析每期奇数和偶数的比例分布，预测下期奇偶比及各位号码",
-                "params": [
-                    {"name": "window", "type": "int", "default": 20, "description": "观察窗口期数"},
-                ],
-            },
-            {
-                "id": "same_position_repeat",
-                "name": "同位重号分析",
-                "description": "分析与上一期同位置重复号码的规律，预测哪些位置可能重号",
+                "id": "pick3_repeat",
+                "name": "重号策略",
+                "description": "上期出现的5个号码中，选出最可能在下期重复出现的3个",
                 "params": [
                     {"name": "window", "type": "int", "default": 30, "description": "观察窗口期数"},
                 ],
             },
             {
-                "id": "group_pattern",
-                "name": "组选形态分析",
-                "description": "分析号码的重复形态（豹子/对子/全不同等）规律",
+                "id": "pick3_combo_hot",
+                "name": "热门组合",
+                "description": "统计历史上哪些3个数字的组合最经常同时出现在同一期",
                 "params": [
-                    {"name": "window", "type": "int", "default": 50, "description": "观察窗口期数"},
+                    {"name": "window", "type": "int", "default": 100, "description": "观察窗口期数"},
                 ],
             },
             {
-                "id": "trend",
-                "name": "走势分析",
-                "description": "分析各位号码的升降走势（上升/下降/持平），预测下期走向",
+                "id": "pick3_trend_follow",
+                "name": "趋势跟踪",
+                "description": "分析近期号码走势，选出持续上升或持续活跃的3个号码",
                 "params": [
                     {"name": "window", "type": "int", "default": 10, "description": "观察窗口期数"},
+                ],
+            },
+            {
+                "id": "pick3_odd_even_balance",
+                "name": "奇偶均衡",
+                "description": "根据近期奇偶出现比例，选出最可能出现的2奇1偶或2偶1奇组合",
+                "params": [
+                    {"name": "window", "type": "int", "default": 20, "description": "观察窗口期数"},
+                ],
+            },
+            {
+                "id": "pick3_section",
+                "name": "分区选号",
+                "description": "将0-9分为3区(0-3/4-6/7-9)，每区选出最活跃的1个号码",
+                "params": [
+                    {"name": "window", "type": "int", "default": 20, "description": "观察窗口期数"},
+                ],
+            },
+            {
+                "id": "pick3_gap_pattern",
+                "name": "间距规律",
+                "description": "分析相邻期号码间距规律，预测下期可能出现在特定间距的号码",
+                "params": [
+                    {"name": "window", "type": "int", "default": 15, "description": "观察窗口期数"},
                 ],
             },
         ]
 
     def run_analysis(self, rule: str, params: dict) -> dict:
-        """执行单次分析"""
+        """执行单次分析，返回预测的3个号码"""
         if not self.history:
             return {"error": "暂无历史数据"}
 
@@ -165,18 +164,18 @@ class LotteryAnalyzer:
         return method(self.history, params)
 
     def backtest(self, rule: str, params: dict, test_periods: int = 50) -> dict:
-        """回测验证：逐期验证预测结果"""
-        if len(self.history) < test_periods + 20:
-            return {"error": f"历史数据不足，需要至少 {test_periods + 20} 期数据"}
+        """回测验证：预测3个号码，判断是否全部出现在开奖的5位数字中"""
+        if len(self.history) < test_periods + 30:
+            return {"error": f"历史数据不足，需要至少 {test_periods + 30} 期数据"}
 
         method = getattr(self, f"_rule_{rule}", None)
         if method is None:
             return {"error": f"未知的分析规则: {rule}"}
 
         results = []
-        total_position_hits = 0
-        total_positions = 0
-        exact_hits = 0
+        all3_hits = 0
+        at_least2_hits = 0
+        at_least1_hits = 0
 
         for i in range(test_periods):
             end_idx = len(self.history) - test_periods + i
@@ -187,469 +186,342 @@ class LotteryAnalyzer:
             if "error" in prediction:
                 continue
 
-            predicted_positions = prediction.get("predicted_positions", [])
+            predicted_3 = prediction.get("predicted_numbers", [])[:3]
             actual_digits = actual["digits"]
+            actual_set = set(actual_digits)
 
-            position_hits = []
-            period_hit_count = 0
-            for pos_pred in predicted_positions:
-                pos = pos_pred["position"]
-                pred_nums = pos_pred["numbers"]
-                actual_num = actual_digits[pos]
-                hit = actual_num in pred_nums
-                if hit:
-                    period_hit_count += 1
-                position_hits.append({
-                    "position": pos,
-                    "predicted": pred_nums,
-                    "actual": actual_num,
-                    "hit": hit,
-                })
+            hit_numbers = [n for n in predicted_3 if n in actual_set]
+            hit_count = len(hit_numbers)
 
-            total_position_hits += period_hit_count
-            total_positions += len(predicted_positions)
-            if period_hit_count == 5:
-                exact_hits += 1
+            if hit_count == 3:
+                all3_hits += 1
+            if hit_count >= 2:
+                at_least2_hits += 1
+            if hit_count >= 1:
+                at_least1_hits += 1
 
             results.append({
                 "period": actual.get("period", f"第{end_idx+1}期"),
+                "predicted": predicted_3,
                 "actual_digits": actual_digits,
-                "position_hits": position_hits,
-                "hit_count": period_hit_count,
-                "hit_all": period_hit_count == 5,
+                "actual_set": sorted(actual_set),
+                "hit_numbers": hit_numbers,
+                "hit_count": hit_count,
+                "all_hit": hit_count == 3,
             })
 
-        position_accuracy = total_position_hits / total_positions if total_positions > 0 else 0
-        avg_hit = total_position_hits / len(results) if results else 0
-        periods_with_any_hit = sum(1 for r in results if r["hit_count"] > 0)
-
-        per_position_stats = [0] * 5
-        for r in results:
-            for ph in r["position_hits"]:
-                if ph["hit"]:
-                    per_position_stats[ph["position"]] += 1
+        total = len(results)
+        all3_rate = all3_hits / total if total > 0 else 0
+        at_least2_rate = at_least2_hits / total if total > 0 else 0
+        at_least1_rate = at_least1_hits / total if total > 0 else 0
+        avg_hit = sum(r["hit_count"] for r in results) / total if total > 0 else 0
 
         return {
             "rule": rule,
             "params": params,
-            "test_periods": len(results),
-            "position_accuracy": round(position_accuracy, 4),
-            "position_accuracy_pct": f"{position_accuracy*100:.1f}%",
-            "avg_hit_positions": round(avg_hit, 2),
-            "periods_with_any_hit": periods_with_any_hit,
-            "any_hit_pct": f"{periods_with_any_hit/len(results)*100:.1f}%" if results else "0%",
-            "exact_hits": exact_hits,
-            "per_position_accuracy": [
-                {"position": i, "name": POSITION_NAMES[i],
-                 "hits": per_position_stats[i],
-                 "accuracy": f"{per_position_stats[i]/len(results)*100:.1f}%" if results else "0%"}
-                for i in range(5)
-            ],
+            "test_periods": total,
+            "all3_hits": all3_hits,
+            "all3_rate": round(all3_rate, 4),
+            "all3_rate_pct": f"{all3_rate*100:.1f}%",
+            "at_least2_hits": at_least2_hits,
+            "at_least2_rate_pct": f"{at_least2_rate*100:.1f}%",
+            "at_least1_hits": at_least1_hits,
+            "at_least1_rate_pct": f"{at_least1_rate*100:.1f}%",
+            "avg_hit_count": round(avg_hit, 2),
             "details": results,
         }
 
-    # ========== 排列五专用分析规则 ==========
+    # ========== 预测任意3个号码 - 分析规则 ==========
 
-    def _rule_position_hot_cold(self, records: list, params: dict) -> dict:
-        """按位冷热号分析"""
+    def _rule_pick3_frequency(self, records: list, params: dict) -> dict:
+        """频率选号：统计所有位置出现频率最高/最低的3个号码"""
         window = params.get("window", 20)
         strategy = params.get("strategy", "hot")
         recent = records[-window:]
 
-        predicted_positions = []
-        position_details = []
+        all_digits = []
+        for r in recent:
+            all_digits.extend(r["digits"])
+        counter = Counter(all_digits)
 
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            sorted_nums = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)
+        sorted_nums = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)
 
-            if strategy == "hot":
-                predicted = sorted_nums[:3]
-            elif strategy == "cold":
-                predicted = sorted_nums[-3:]
-            else:
-                predicted = sorted_nums[:2] + sorted_nums[-1:]
+        if strategy == "hot":
+            predicted = sorted_nums[:3]
+        elif strategy == "cold":
+            predicted = sorted_nums[-3:]
+        else:
+            predicted = [sorted_nums[0], sorted_nums[-1], sorted_nums[4]]
 
-            predicted_positions.append({"position": pos, "numbers": predicted})
-            position_details.append({
-                "position": pos,
-                "name": POSITION_NAMES[pos],
-                "frequency": [{"number": n, "count": counter.get(n, 0)} for n in range(10)],
-                "predicted": predicted,
-            })
+        freq_data = [{"number": n, "count": counter.get(n, 0)} for n in range(10)]
 
         return {
-            "rule": "position_hot_cold",
+            "rule": "pick3_frequency",
+            "predicted_numbers": predicted,
+            "frequency_data": freq_data,
             "strategy": strategy,
-            "window": window,
-            "predicted_positions": predicted_positions,
-            "position_details": position_details,
-            "description": f"基于近{window}期各位{'热号' if strategy == 'hot' else '冷号' if strategy == 'cold' else '混合'}分析",
+            "description": f"近{window}期{'最热' if strategy == 'hot' else '最冷' if strategy == 'cold' else '混合'}3个号码: {predicted}",
         }
 
-    def _rule_position_interval(self, records: list, params: dict) -> dict:
-        """按位遗漏分析"""
-        threshold_ratio = params.get("threshold_ratio", 1.5)
+    def _rule_pick3_overdue(self, records: list, params: dict) -> dict:
+        """遗漏回补：找长期未在任何位置出现的号码"""
+        threshold = params.get("threshold", 5)
 
-        predicted_positions = []
-        position_details = []
+        last_seen = {n: -1 for n in range(10)}
+        for idx, r in enumerate(records):
+            for d in r["digits"]:
+                last_seen[d] = idx
 
-        for pos in range(5):
-            last_seen = {}
-            intervals = {n: [] for n in range(10)}
+        total = len(records)
+        gaps = []
+        for n in range(10):
+            gap = total - 1 - last_seen[n] if last_seen[n] >= 0 else total
+            gaps.append({"number": n, "gap": gap})
 
-            for idx, r in enumerate(records):
-                n = r["digits"][pos]
-                if n in last_seen:
-                    intervals[n].append(idx - last_seen[n])
-                last_seen[n] = idx
+        gaps.sort(key=lambda x: x["gap"], reverse=True)
+        predicted = [g["number"] for g in gaps if g["gap"] >= threshold][:3]
 
-            total = len(records)
-            overdue = []
-            for n in range(10):
-                current_gap = total - last_seen.get(n, 0)
-                avg_iv = np.mean(intervals[n]) if intervals[n] else total
-                ratio = current_gap / avg_iv if avg_iv > 0 else 0
-                overdue.append({
-                    "number": n,
-                    "current_gap": current_gap,
-                    "avg_interval": round(avg_iv, 1),
-                    "ratio": round(ratio, 2),
-                })
-
-            overdue.sort(key=lambda x: x["ratio"], reverse=True)
-            predicted = [item["number"] for item in overdue if item["ratio"] >= threshold_ratio][:3]
-            if not predicted:
-                predicted = [overdue[0]["number"]]
-
-            predicted_positions.append({"position": pos, "numbers": predicted})
-            position_details.append({
-                "position": pos,
-                "name": POSITION_NAMES[pos],
-                "overdue_data": overdue,
-                "predicted": predicted,
-            })
+        if len(predicted) < 3:
+            predicted = [g["number"] for g in gaps[:3]]
 
         return {
-            "rule": "position_interval",
-            "threshold_ratio": threshold_ratio,
-            "predicted_positions": predicted_positions,
-            "position_details": position_details,
-            "description": f"各位遗漏超{threshold_ratio}倍平均值的号码",
+            "rule": "pick3_overdue",
+            "predicted_numbers": predicted,
+            "gap_data": gaps,
+            "threshold": threshold,
+            "description": f"遗漏≥{threshold}期的号码: {predicted}",
         }
 
-    def _rule_sum_value(self, records: list, params: dict) -> dict:
-        """和值分析"""
-        window = params.get("window", 30)
-        bins = params.get("bins", 5)
-        recent = records[-window:]
+    def _rule_pick3_neighbor(self, records: list, params: dict) -> dict:
+        """邻号跟随：上期号码的±N邻号出现概率高"""
+        range_size = params.get("range_size", 1)
 
-        sums = [sum(r["digits"]) for r in recent]
-        all_sums = [sum(r["digits"]) for r in records]
+        last_digits = set(records[-1]["digits"])
+        neighbors = set()
+        for d in last_digits:
+            for offset in range(-range_size, range_size + 1):
+                n = d + offset
+                if 0 <= n <= 9:
+                    neighbors.add(n)
 
-        avg_sum = np.mean(sums)
-        std_sum = np.std(sums)
+        all_digits = []
+        for r in records[-20:]:
+            all_digits.extend(r["digits"])
+        counter = Counter(all_digits)
 
-        min_s, max_s = 0, 45
-        bin_size = (max_s - min_s + 1) / bins
-        bin_counts = [0] * bins
-        for s in all_sums:
-            idx = min(int((s - min_s) / bin_size), bins - 1)
-            bin_counts[idx] += 1
-
-        predicted_sum_low = max(0, int(avg_sum - std_sum))
-        predicted_sum_high = min(45, int(avg_sum + std_sum))
-
-        target_sum = round(avg_sum)
-        predicted_positions = []
-        avg_per_pos = target_sum / 5
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            candidates = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)
-            near_avg = sorted(candidates[:5], key=lambda x: abs(x - avg_per_pos))[:3]
-            predicted_positions.append({"position": pos, "numbers": near_avg})
-
-        bin_data = []
-        for i in range(bins):
-            low = int(min_s + i * bin_size)
-            high = int(min_s + (i + 1) * bin_size) - 1
-            bin_data.append({
-                "range": f"{low}-{high}",
-                "count": bin_counts[i],
-                "frequency": round(bin_counts[i] / len(all_sums), 4),
-            })
+        candidates = sorted(neighbors, key=lambda x: counter.get(x, 0), reverse=True)
+        predicted = candidates[:3]
 
         return {
-            "rule": "sum_value",
-            "predicted_positions": predicted_positions,
-            "predicted_sum_range": [predicted_sum_low, predicted_sum_high],
-            "recent_avg_sum": round(avg_sum, 1),
-            "recent_std": round(std_sum, 1),
-            "sum_distribution": bin_data,
-            "recent_sums": sums[-10:],
-            "description": f"预测和值范围 {predicted_sum_low}-{predicted_sum_high}（近{window}期均值{avg_sum:.0f}）",
+            "rule": "pick3_neighbor",
+            "predicted_numbers": predicted,
+            "last_digits": sorted(last_digits),
+            "all_neighbors": sorted(neighbors),
+            "description": f"上期{sorted(last_digits)}的±{range_size}邻号: {predicted}",
         }
 
-    def _rule_span(self, records: list, params: dict) -> dict:
-        """跨度分析"""
+    def _rule_pick3_repeat(self, records: list, params: dict) -> dict:
+        """重号策略：上期5个号码中选最可能重复出现的3个"""
         window = params.get("window", 30)
         recent = records[-window:]
 
-        spans = [max(r["digits"]) - min(r["digits"]) for r in recent]
-        all_spans = [max(r["digits"]) - min(r["digits"]) for r in records]
-
-        avg_span = np.mean(spans)
-        span_counter = Counter(all_spans)
-
-        most_common_span = span_counter.most_common(5)
-        predicted_span = round(avg_span)
-
-        predicted_positions = []
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            predicted = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)[:3]
-            predicted_positions.append({"position": pos, "numbers": predicted})
-
-        return {
-            "rule": "span",
-            "predicted_positions": predicted_positions,
-            "predicted_span": predicted_span,
-            "avg_span": round(avg_span, 1),
-            "span_distribution": [{"span": s, "count": c} for s, c in sorted(span_counter.items())],
-            "most_common_spans": [{"span": s, "count": c} for s, c in most_common_span],
-            "recent_spans": spans[-10:],
-            "description": f"预测跨度 {predicted_span}（近{window}期平均{avg_span:.1f}）",
-        }
-
-    def _rule_big_small(self, records: list, params: dict) -> dict:
-        """大小比分析 (0-4小, 5-9大)"""
-        window = params.get("window", 20)
-        recent = records[-window:]
-
-        ratios = []
-        for r in recent:
-            big_count = sum(1 for d in r["digits"] if d >= 5)
-            ratios.append(big_count)
-
-        avg_big = np.mean(ratios)
-        predicted_big = round(avg_big)
-        predicted_small = 5 - predicted_big
-
-        ratio_dist = Counter([f"{b}:{5-b}" for b in ratios])
-
-        predicted_positions = []
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            big_nums = sorted([n for n in range(5, 10)], key=lambda x: counter.get(x, 0), reverse=True)
-            small_nums = sorted([n for n in range(0, 5)], key=lambda x: counter.get(x, 0), reverse=True)
-
-            if pos < predicted_big:
-                predicted = big_nums[:3]
-            else:
-                predicted = small_nums[:3]
-            predicted_positions.append({"position": pos, "numbers": predicted})
-
-        return {
-            "rule": "big_small",
-            "predicted_positions": predicted_positions,
-            "predicted_ratio": f"{predicted_big}:{predicted_small}",
-            "avg_big_count": round(avg_big, 2),
-            "ratio_distribution": dict(ratio_dist),
-            "description": f"预测大小比 {predicted_big}大{predicted_small}小",
-        }
-
-    def _rule_odd_even(self, records: list, params: dict) -> dict:
-        """奇偶比分析"""
-        window = params.get("window", 20)
-        recent = records[-window:]
-
-        ratios = []
-        for r in recent:
-            odd_count = sum(1 for d in r["digits"] if d % 2 == 1)
-            ratios.append(odd_count)
-
-        avg_odd = np.mean(ratios)
-        predicted_odd = round(avg_odd)
-        predicted_even = 5 - predicted_odd
-
-        ratio_dist = Counter([f"{o}:{5-o}" for o in ratios])
-
-        predicted_positions = []
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            odd_nums = sorted([n for n in range(10) if n % 2 == 1], key=lambda x: counter.get(x, 0), reverse=True)
-            even_nums = sorted([n for n in range(10) if n % 2 == 0], key=lambda x: counter.get(x, 0), reverse=True)
-
-            if pos < predicted_odd:
-                predicted = odd_nums[:3]
-            else:
-                predicted = even_nums[:3]
-            predicted_positions.append({"position": pos, "numbers": predicted})
-
-        return {
-            "rule": "odd_even",
-            "predicted_positions": predicted_positions,
-            "predicted_ratio": f"{predicted_odd}:{predicted_even}",
-            "avg_odd_count": round(avg_odd, 2),
-            "ratio_distribution": dict(ratio_dist),
-            "description": f"预测奇偶比 {predicted_odd}奇{predicted_even}偶",
-        }
-
-    def _rule_same_position_repeat(self, records: list, params: dict) -> dict:
-        """同位重号分析"""
-        window = params.get("window", 30)
-        recent = records[-window:] if len(records) >= window else records
-
-        repeat_stats = []
+        repeat_freq = Counter()
         for i in range(1, len(recent)):
-            prev = recent[i - 1]["digits"]
-            curr = recent[i]["digits"]
-            repeats = [pos for pos in range(5) if prev[pos] == curr[pos]]
-            repeat_stats.append({
-                "period": recent[i].get("period", ""),
-                "repeat_positions": repeats,
-                "repeat_count": len(repeats),
-            })
-
-        avg_repeat = np.mean([s["repeat_count"] for s in repeat_stats]) if repeat_stats else 0
-
-        pos_repeat_freq = [0] * 5
-        for s in repeat_stats:
-            for pos in s["repeat_positions"]:
-                pos_repeat_freq[pos] += 1
-
-        pos_repeat_rate = [f / len(repeat_stats) if repeat_stats else 0 for f in pos_repeat_freq]
+            prev_set = set(recent[i - 1]["digits"])
+            curr_set = set(recent[i]["digits"])
+            repeats = prev_set & curr_set
+            repeat_freq.update(repeats)
 
         last_digits = records[-1]["digits"]
-        predicted_positions = []
-        for pos in range(5):
-            if pos_repeat_rate[pos] > 0.3:
-                predicted = [last_digits[pos]]
-                numbers = [r["digits"][pos] for r in recent]
-                counter = Counter(numbers)
-                extras = sorted([n for n in range(10) if n != last_digits[pos]],
-                               key=lambda x: counter.get(x, 0), reverse=True)[:2]
-                predicted.extend(extras)
-            else:
-                numbers = [r["digits"][pos] for r in recent]
-                counter = Counter(numbers)
-                predicted = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)[:3]
-            predicted_positions.append({"position": pos, "numbers": predicted})
+        last_set = set(last_digits)
 
-        repeat_count_dist = Counter([s["repeat_count"] for s in repeat_stats])
+        scored = [(n, repeat_freq.get(n, 0)) for n in last_set]
+        scored.sort(key=lambda x: x[1], reverse=True)
+        predicted = [s[0] for s in scored[:3]]
+
+        if len(predicted) < 3:
+            all_counter = Counter()
+            for r in recent:
+                all_counter.update(r["digits"])
+            extras = sorted([n for n in range(10) if n not in predicted],
+                          key=lambda x: all_counter.get(x, 0), reverse=True)
+            predicted.extend(extras[:3 - len(predicted)])
+
+        avg_repeat_count = sum(
+            len(set(recent[i-1]["digits"]) & set(recent[i]["digits"]))
+            for i in range(1, len(recent))
+        ) / (len(recent) - 1)
 
         return {
-            "rule": "same_position_repeat",
-            "predicted_positions": predicted_positions,
-            "avg_repeat_count": round(avg_repeat, 2),
-            "last_digits": last_digits,
-            "per_position_repeat_rate": [
-                {"position": i, "name": POSITION_NAMES[i], "rate": f"{pos_repeat_rate[i]*100:.1f}%"}
-                for i in range(5)
-            ],
-            "repeat_count_distribution": dict(sorted(repeat_count_dist.items())),
-            "description": f"平均每期有{avg_repeat:.1f}个同位重号",
+            "rule": "pick3_repeat",
+            "predicted_numbers": predicted,
+            "last_digits": sorted(last_set),
+            "avg_repeat_digits": round(avg_repeat_count, 2),
+            "description": f"上期号码{sorted(last_set)}中最可能重复的: {predicted}",
         }
 
-    def _rule_group_pattern(self, records: list, params: dict) -> dict:
-        """组选形态分析"""
-        window = params.get("window", 50)
+    def _rule_pick3_combo_hot(self, records: list, params: dict) -> dict:
+        """热门组合：统计哪3个数字最经常同时出现"""
+        window = params.get("window", 100)
         recent = records[-window:]
 
-        def get_pattern(digits):
-            unique_count = len(set(digits))
-            counter = Counter(digits)
-            max_repeat = max(counter.values())
-            if unique_count == 1:
-                return "五同"
-            elif max_repeat == 4:
-                return "四同"
-            elif max_repeat == 3 and unique_count == 2:
-                return "三同+对"
-            elif max_repeat == 3:
-                return "三同"
-            elif unique_count == 3 and max_repeat == 2:
-                return "双对"
-            elif max_repeat == 2 and unique_count == 4:
-                return "一对"
-            else:
-                return "全不同"
+        combo_counter = Counter()
+        for r in recent:
+            unique_digits = set(r["digits"])
+            for combo in combinations(sorted(unique_digits), 3):
+                combo_counter[combo] += 1
 
-        patterns = [get_pattern(r["digits"]) for r in recent]
-        pattern_dist = Counter(patterns)
+        if not combo_counter:
+            for r in recent:
+                for combo in combinations(sorted(r["digits"]), 3):
+                    combo_counter[combo] += 1
 
-        most_common = pattern_dist.most_common(1)[0][0] if pattern_dist else "全不同"
-
-        predicted_positions = []
-        for pos in range(5):
-            numbers = [r["digits"][pos] for r in recent]
-            counter = Counter(numbers)
-            predicted = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)[:3]
-            predicted_positions.append({"position": pos, "numbers": predicted})
+        top_combos = combo_counter.most_common(10)
+        predicted = list(top_combos[0][0]) if top_combos else [0, 1, 2]
 
         return {
-            "rule": "group_pattern",
-            "predicted_positions": predicted_positions,
-            "predicted_pattern": most_common,
-            "pattern_distribution": dict(pattern_dist.most_common()),
-            "recent_patterns": patterns[-10:],
-            "description": f"最常见形态: {most_common}（占比{pattern_dist[most_common]/len(patterns)*100:.0f}%）",
+            "rule": "pick3_combo_hot",
+            "predicted_numbers": predicted,
+            "top_combinations": [{"combo": list(c), "count": cnt} for c, cnt in top_combos[:10]],
+            "description": f"近{window}期最热门组合: {predicted}（出现{top_combos[0][1] if top_combos else 0}次）",
         }
 
-    def _rule_trend(self, records: list, params: dict) -> dict:
-        """走势分析（升/降/平）"""
+    def _rule_pick3_trend_follow(self, records: list, params: dict) -> dict:
+        """趋势跟踪：选近期出现频率持续上升的号码"""
         window = params.get("window", 10)
         recent = records[-window:]
 
-        position_trends = []
-        predicted_positions = []
+        half = window // 2
+        first_half = recent[:half]
+        second_half = recent[half:]
 
-        for pos in range(5):
-            values = [r["digits"][pos] for r in recent]
-            ups = sum(1 for i in range(1, len(values)) if values[i] > values[i-1])
-            downs = sum(1 for i in range(1, len(values)) if values[i] < values[i-1])
-            flats = sum(1 for i in range(1, len(values)) if values[i] == values[i-1])
+        first_counter = Counter()
+        for r in first_half:
+            first_counter.update(r["digits"])
 
-            total_moves = len(values) - 1
-            last_val = values[-1]
+        second_counter = Counter()
+        for r in second_half:
+            second_counter.update(r["digits"])
 
-            if ups > downs:
-                trend = "上升"
-                candidates = [n for n in range(last_val, 10)]
-                if not candidates:
-                    candidates = list(range(7, 10))
-            elif downs > ups:
-                trend = "下降"
-                candidates = [n for n in range(0, last_val + 1)]
-                if not candidates:
-                    candidates = list(range(0, 3))
-            else:
-                trend = "持平"
-                candidates = [last_val, max(0, last_val - 1), min(9, last_val + 1)]
+        trend_score = {}
+        for n in range(10):
+            first_freq = first_counter.get(n, 0) / (half * 5) if half > 0 else 0
+            second_freq = second_counter.get(n, 0) / ((window - half) * 5) if (window - half) > 0 else 0
+            trend_score[n] = second_freq - first_freq
 
-            counter = Counter([r["digits"][pos] for r in recent])
-            predicted = sorted(candidates, key=lambda x: counter.get(x, 0), reverse=True)[:3]
+        sorted_by_trend = sorted(range(10), key=lambda x: trend_score[x], reverse=True)
+        predicted = sorted_by_trend[:3]
 
-            predicted_positions.append({"position": pos, "numbers": predicted})
-            position_trends.append({
-                "position": pos,
-                "name": POSITION_NAMES[pos],
-                "trend": trend,
-                "ups": ups,
-                "downs": downs,
-                "flats": flats,
-                "last_value": last_val,
-                "values": values,
+        trend_data = [{"number": n, "first_half": first_counter.get(n, 0),
+                       "second_half": second_counter.get(n, 0),
+                       "trend": round(trend_score[n], 4)} for n in range(10)]
+
+        return {
+            "rule": "pick3_trend_follow",
+            "predicted_numbers": predicted,
+            "trend_data": sorted(trend_data, key=lambda x: x["trend"], reverse=True),
+            "description": f"近{window}期趋势上升最快: {predicted}",
+        }
+
+    def _rule_pick3_odd_even_balance(self, records: list, params: dict) -> dict:
+        """奇偶均衡：根据近期奇偶比例选号"""
+        window = params.get("window", 20)
+        recent = records[-window:]
+
+        all_digits = []
+        for r in recent:
+            all_digits.extend(r["digits"])
+        counter = Counter(all_digits)
+
+        odd_nums = sorted([n for n in range(10) if n % 2 == 1],
+                         key=lambda x: counter.get(x, 0), reverse=True)
+        even_nums = sorted([n for n in range(10) if n % 2 == 0],
+                          key=lambda x: counter.get(x, 0), reverse=True)
+
+        odd_total = sum(counter.get(n, 0) for n in range(10) if n % 2 == 1)
+        even_total = sum(counter.get(n, 0) for n in range(10) if n % 2 == 0)
+
+        if odd_total >= even_total:
+            predicted = odd_nums[:2] + even_nums[:1]
+        else:
+            predicted = even_nums[:2] + odd_nums[:1]
+
+        return {
+            "rule": "pick3_odd_even_balance",
+            "predicted_numbers": predicted,
+            "odd_count": odd_total,
+            "even_count": even_total,
+            "top_odds": odd_nums[:5],
+            "top_evens": even_nums[:5],
+            "description": f"奇{odd_total}偶{even_total}，选号: {predicted}",
+        }
+
+    def _rule_pick3_section(self, records: list, params: dict) -> dict:
+        """分区选号：0-9分3区，每区选最热的1个"""
+        window = params.get("window", 20)
+        recent = records[-window:]
+
+        sections = [(0, 3), (4, 6), (7, 9)]
+        section_names = ["低区0-3", "中区4-6", "高区7-9"]
+
+        all_digits = []
+        for r in recent:
+            all_digits.extend(r["digits"])
+        counter = Counter(all_digits)
+
+        predicted = []
+        section_details = []
+        for (low, high), name in zip(sections, section_names):
+            section_nums = list(range(low, high + 1))
+            best = max(section_nums, key=lambda x: counter.get(x, 0))
+            predicted.append(best)
+            section_details.append({
+                "section": name,
+                "numbers": {n: counter.get(n, 0) for n in section_nums},
+                "selected": best,
             })
 
         return {
-            "rule": "trend",
-            "predicted_positions": predicted_positions,
-            "position_trends": position_trends,
-            "description": "各位走势: " + " ".join(f"{POSITION_NAMES[i]}{'↑' if t['trend']=='上升' else '↓' if t['trend']=='下降' else '→'}" for i, t in enumerate(position_trends)),
+            "rule": "pick3_section",
+            "predicted_numbers": predicted,
+            "section_details": section_details,
+            "description": f"三区各选1号: {predicted}",
+        }
+
+    def _rule_pick3_gap_pattern(self, records: list, params: dict) -> dict:
+        """间距规律：分析号码间距模式"""
+        window = params.get("window", 15)
+        recent = records[-window:]
+
+        all_digits = []
+        for r in recent:
+            all_digits.extend(r["digits"])
+        counter = Counter(all_digits)
+
+        sorted_nums = sorted(range(10), key=lambda x: counter.get(x, 0), reverse=True)
+
+        last_unique = sorted(set(records[-1]["digits"]))
+        if len(last_unique) >= 2:
+            avg_gap = np.mean([last_unique[i+1] - last_unique[i] for i in range(len(last_unique)-1)])
+        else:
+            avg_gap = 3
+
+        base = sorted_nums[0]
+        predicted = [base]
+        step = max(1, round(avg_gap))
+        next_num = (base + step) % 10
+        predicted.append(next_num)
+        next_num2 = (next_num + step) % 10
+        if next_num2 in predicted:
+            next_num2 = sorted_nums[1] if sorted_nums[1] not in predicted else sorted_nums[2]
+        predicted.append(next_num2)
+
+        predicted = predicted[:3]
+
+        return {
+            "rule": "pick3_gap_pattern",
+            "predicted_numbers": predicted,
+            "avg_gap": round(avg_gap, 1),
+            "frequency_data": [{"number": n, "count": counter.get(n, 0)} for n in range(10)],
+            "description": f"平均间距{avg_gap:.1f}，选号: {predicted}",
         }
